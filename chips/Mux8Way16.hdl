@@ -7,7 +7,11 @@
  * 8-way 16-bit multiplexor:
  * out = a if sel == 000
  *       b if sel == 001
- *       etc.
+ *       c if sel == 010
+ *       d if sel == 011
+ *       e if sel == 100
+ *       f if sel == 101
+ *       g if sel == 110
  *       h if sel == 111
  */
 
@@ -18,5 +22,13 @@ CHIP Mux8Way16 {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+    Mux16(a=a, b=b, sel=sel[0], out=abOut);
+    Mux16(a=c, b=d, sel=sel[0], out=cdOut);
+    Mux16(a=abOut, b=cdOut, sel=sel[1], out=abcdOut);
+
+    Mux16(a=e, b=f, sel=sel[0], out=efOut);
+    Mux16(a=g, b=h, sel=sel[0], out=ghOut);
+    Mux16(a=efOut, b=ghOut, sel=sel[1], out=efghOut);
+
+    Mux16(a=abcdOut, b=efghOut, sel=sel[2], out=out);
 }
