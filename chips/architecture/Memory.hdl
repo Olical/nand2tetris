@@ -31,21 +31,14 @@ CHIP Memory {
     // 10 = Screen - (Xor a b)
     // 11 = Keyboard (And a b)
 
-    Or(a=address[0], b=address[1], out=orRam);
-    Not(in=orRam, out=isRam);
+    DMux4Way(in=load, sel=address[13..14], a=aram, b=bram, c=screen, d=keyboard);
 
-    Xor(a=address[0], b=address[1], out=isScreen);
+    Or(a=aram, b=bram, out=ram);
+    RAM16K(in=in, load=ram, address=address[0..13], out=ramOut);
 
-    And(a=address[0], b=address[1], out=isKeyboard);
+    Screen(in=in, load=screen, address=address[0..12], out=screenOut);
 
-    And(a=isRam, b=load, out=loadRam);
-    And(a=isScreen, b=load, out=loadScreen);
-    And(a=isKeyboard, b=load, out=loadKeyboard);
+    Keyboard(out=keyboardOut);
 
-    RAM16K(in=in, load=loadRam, out=outRam, address=address[1..14]);
-    Screen(in=in, load=loadScreen, out=outScreen, address=address[2..14]);
-    Keyboard(out=outKeyboard);
-
-    Mux16(a=outRam, b=outScreen, sel=isScreen, out=tempOut);
-    Mux16(a=tempOut, b=outKeyboard, sel=isKeyboard, out=out);
+    Mux4Way16(a=ramOut, b=ramOut, c=screenOut, d=keyboardOut, sel=address[13..14], out=out);
 }
