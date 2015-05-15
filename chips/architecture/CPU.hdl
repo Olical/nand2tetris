@@ -39,5 +39,72 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+    // 111 a cccccc ddd jjj
+
+    // i  _  _  a  c1 c2 c3 c4 c5 c6 d1 d2 d3 j1 j2 j3
+    // 15 14 13 12 11 10 09 08 07 06 05 04 03 02 01 00
+
+    // A instruction
+    // @3001
+    // [0]000101110111001
+    // Op - Instruction
+    // Op code of 0 means, a instruction.
+    Not(in=instruction[15], out=notOp);
+    Mux16(a=aluOut, b=instruction, sel=notOp, out=entryMuxOut);
+
+    Or(a=notOp, b=instruction[5], out=intoA);
+    ARegister(in=entryMuxOut, load=intoA, out=A, out[0..14]=addressM);
+
+    // C instruction
+    // Op code is 1, indexes:
+    // 0 - Op code
+    // 1-3 ???
+    // 4-9 ALU control bits
+    // 10-12 Destination load bits
+    // 13-15 Jump bits
+    //
+    // ALU takes input from DRegister and from ARegister or inM
+    And(a=instruction[15], b=instruction[12], out=AMSwitch);
+    Mux16(a=A, b=inM, sel=AMSwitch, out=AM);
+
+    And(a=instruction[15], b=instruction[4], out=intoD);
+    DRegister(in=aluOut,load=intoD, out=D);
+
+    ALU(x=D, y=AM, out=aluOut, out=outM,
+        zx=instruction[11],
+        nx=instruction[10],
+        zy=instruction[9],
+        ny=instruction[8],
+        f=instruction[7],
+        no=instruction[6],
+
+        zr=zrOut,
+        ng=ngOut
+    );
+
+    // writeM uses 3rd destination load bit.
+    And(a=instruction[15], b=instruction[3], out=writeM);
+
+    // Program counter.
+    // Emits next instruction.
+    // Reset: = 0
+    // 000 nojump: ++
+    // 111 goto: = A
+    // 010 100 etc conditional goto: = A || ++
+    Not(in=ngOut, out=pos);
+    Not(in=zrOut, out=nzr);
+    And(a=instruction[15], b=instruction[0], out=jgt);
+    And(a=pos, b=nzr, out=posnzr);
+    And(a=jgt, b=posnzr, out=ld1);
+
+    And(a=instruction[15], b=instruction[1], out=jeq);
+    And(a=jeq, b=zrOut, out=ld2);
+
+    And(a=instruction[15], b=instruction[2], out=jlt);
+    And(a=jlt, b=ngOut, out=ld3);
+
+    Or(a=ld1, b=ld2, out=ldt);
+    Or(a=ld3, b=ldt, out=ld);
+
+    PC(in=A, load=ld, inc=true, reset=reset, out[0..14]=pc);
 }
