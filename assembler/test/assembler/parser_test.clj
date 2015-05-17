@@ -73,5 +73,4 @@
                       :dest :D
                       :comp :1}
                      {:type :address
-                      :symbol "a"}
-                     ])))
+                      :symbol "a"}])))
