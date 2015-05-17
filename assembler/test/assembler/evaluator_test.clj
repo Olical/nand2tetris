@@ -22,6 +22,9 @@
   (let [result (f instructions)]
     (is (= result expected))))
 
+(defn check-assign [symbols instructions expected]
+  (check #(assign-symbols symbols %) instructions expected))
+
 (def check-symbols (partial check get-symbols))
 
 (deftest is-symbol-test
@@ -41,3 +44,12 @@
                     :i 17
                     :RECUR 18
                     :a 19})))
+
+(deftest assign-symbols-test
+  (testing "Passing no symbols returns the same instructions."
+    (check-assign {} instructions instructions))
+  (testing "Passing symbols returns the mapped instructions."
+    (check-assign
+      {:RECUR 42}
+      instructions
+      (assoc-in instructions [3 :value] 42))))

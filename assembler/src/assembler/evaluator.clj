@@ -47,15 +47,22 @@
       (let [symbol (keyword ((first ins) :symbol))
             next-id (+ 16 (count symbols))]
         (recur (rest ins)
-              (if (is-symbol? symbols symbol)
-                symbols
-                (assoc symbols symbol next-id)))))))
+               (if (is-symbol? symbols symbol)
+                 symbols
+                 (assoc symbols symbol next-id)))))))
 
 (defn assign-symbols
   "Assigns the given symbol table to the instructions, so symbols will be
   replaced with they're numerical value."
   [symbols instructions]
-  [])
+  (map
+    (fn [inst]
+      (let [symbol (keyword (inst :symbol))
+            value (symbols symbol)]
+        (if (and symbol value)
+          (assoc inst :value value)
+          inst)))
+    instructions))
 
 (defn get-binary
   "Looks up the binary counterpart of the given instruction."
