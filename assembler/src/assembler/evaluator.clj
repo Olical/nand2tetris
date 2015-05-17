@@ -53,7 +53,7 @@
 
 (defn assign-symbols
   "Assigns the given symbol table to the instructions, so symbols will be
-  replaced with they're numerical value."
+  replaced with their numerical value."
   [symbols instructions]
   (map
     (fn [inst]
