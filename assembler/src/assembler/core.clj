@@ -1,6 +1,6 @@
 (ns assembler.core)
 
-(defn foo
-  "I don't do a whole lot."
-  [x]
-  (println x "Hello, World!"))
+(defn -main
+  "Takes stdin, pipes it through the assembler parts and pipes the result through stdout."
+  []
+  (println (slurp *in*)))
