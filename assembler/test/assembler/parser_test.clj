@@ -14,7 +14,7 @@
   (testing "A instruction"
     (check-token "@10"
                  {:type :address
-                  :symbol "10"}))
+                  :value 10 }))
   (testing "C instruction"
     (check-token "M=1"
                  {:type :command

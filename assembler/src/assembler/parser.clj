@@ -1,7 +1,8 @@
 (ns assembler.parser
   (:require [clojure.string :as str]))
 
-(def token-expressions {:a       #"@(.*)"
+(def token-expressions {:a-val   #"@(\d+)"
+                        :a       #"@(.*)"
                         :c       #"(\w+)=(.*);(\w+)"
                         :c-assoc #"(\w+)=(.*)"
                         :c-jump  #"(.*);(\w+)"
@@ -9,7 +10,10 @@
 
 (def whitespace-expression #"(\s|//.*)+")
 
-(def factories {:a       (fn [[_ symbol]]
+(def factories {:a-val   (fn [[_ symbol]]
+                           {:type :address
+                            :value (read-string symbol)})
+                :a       (fn [[_ symbol]]
                            {:type :address
                             :symbol symbol})
                 :c       (fn [[_ dest comp jump]]
@@ -38,6 +42,7 @@
   "Takes a single ASM token, returns an instruction hash-map."
   [token]
   (condp #(re-matches (token-expressions %1) %2) token
+    :a-val   :>> (factories :a-val)
     :a       :>> (factories :a)
     :c       :>> (factories :c)
     :c-assoc :>> (factories :c-assoc)
