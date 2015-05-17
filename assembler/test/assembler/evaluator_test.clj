@@ -53,3 +53,8 @@
       {:RECUR 42}
       instructions
       (assoc-in instructions [3 :value] 42))))
+
+;; This should just test one of each type.
+;; No point exhaustive testing, it's just lookup tables.
+;; As long as the tables are hooked up correctly, we're good.
+(deftest get-binary-test)
