@@ -16,7 +16,11 @@
     :dest :D
     :comp :1}
    {:type :address
-    :symbol "a"}])
+    :symbol "a"}
+   {:type :address
+    :symbol "FOO"}
+   {:type :label
+    :symbol "FOO"}])
 
 (defn check [f instructions expected]
   (let [result (f instructions)]
@@ -25,7 +29,7 @@
 (defn check-assign [symbols instructions expected]
   (check #(assign-symbols symbols %) instructions expected))
 
-(def check-symbols (partial check get-symbols))
+(def check-symbols (partial check (partial get-symbols {})))
 (def check-binary (partial check get-binary))
 (def check-eval (partial check evaluate))
 
@@ -42,10 +46,11 @@
     (check-symbols [] {}))
   (testing "Instructions with unresolved symbols resolve to the default symbol table."
     (check-symbols instructions
-                   {:LOOP 16
-                    :i 17
-                    :RECUR 18
-                    :a 19})))
+                   {:LOOP 0
+                    :i 16
+                    :RECUR 3
+                    :a 17
+                    :FOO 7})))
 
 (deftest assign-symbols-test
   (testing "Passing no symbols returns the same instructions."
@@ -100,9 +105,8 @@
   (testing "Complex instructions."
     (check-eval
       instructions
-      [nil
-       "1111110000000111"
+      ["1111110000000111"
        "0000000000010001"
-       nil
        "1110111111010000"
-       "0000000000010011"])))
+       "0000000000010011"
+       "0000000000000101"])))
