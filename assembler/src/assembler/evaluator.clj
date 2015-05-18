@@ -1,11 +1,5 @@
 (ns assembler.evaluator)
 
-;; Will take a parsed instruction vector.
-;; Passes the vector to a function that calculates the full symbol table.
-;; Passes the vector to a function that swaps symbols for addresses.
-;; Passes the vector to a function that maps the instructions to their binary equivalent.
-;; The final result is returned as a vector of binary strings.
-
 (def default-symbol-table
   {:SP     0
    :LCL    1
@@ -30,6 +24,56 @@
    :R15    15
    :SCREEN 16384
    :KBD    24576})
+
+(def bin-comp
+  {:0   "0101010"
+   :1   "0111111"
+   :-1  "0111010"
+   :D   "0001100"
+   :A   "0110000"
+   :!D  "0001101"
+   :!A  "0110001"
+   :-D  "0001111"
+   :-A  "0110011"
+   :D+1 "0011111"
+   :A+1 "0110111"
+   :D-1 "0001110"
+   :A-1 "0110010"
+   :D+A "0000010"
+   :D-A "0010011"
+   :A-D "0000111"
+   :D&A "0000000"
+   :D|A "0010101"
+   :M   "1110000"
+   :!M  "1110001"
+   :-M  "1110011"
+   :M+1 "1110111"
+   :M-1 "1110010"
+   :D+M "1000010"
+   :D-M "1010011"
+   :M-D "1000111"
+   :D&M "1000000"
+   :D|M "1010101"})
+
+(def bin-dest
+  {nil "000"
+   :M    "001"
+   :D    "010"
+   :MD   "011"
+   :A    "100"
+   :AM   "101"
+   :AD   "110"
+   :AMD  "111"})
+
+(def bin-jump
+  {nil "000"
+   :JGT  "001"
+   :JEQ  "010"
+   :JGE  "011"
+   :JLT  "100"
+   :JNE  "101"
+   :JLE  "110"
+   :JMP  "111"})
 
 (defn is-symbol?
   "Checks if the given symbol exists in the given symbol table or the default table."
@@ -64,10 +108,29 @@
           inst)))
     instructions))
 
+(defn get-address-binary
+  "Constructs the binary string for an address instruction."
+  [{:keys [value]}]
+  (let [binary (Integer/toString value 2)
+        missing (- 16 (count binary))
+        padding (apply str (repeat missing "0"))]
+    (str padding binary)))
+
+(defn get-command-binary
+  "Constructs the binary string for a command instruction."
+  [{:keys [comp dest jump]}]
+  (let [bcomp (bin-comp comp)
+        bdest (bin-dest dest)
+        bjump (bin-jump jump)]
+    (str "111" bcomp bdest bjump)))
+
 (defn get-binary
   "Looks up the binary counterpart of the given instruction."
   [instruction]
-  "")
+  (condp = (instruction :type)
+    :address (get-address-binary instruction)
+    :command (get-command-binary instruction)
+    nil))
 
 (defn evaluate
   "Evaluates the given instructions by mapping their symbols and converting
