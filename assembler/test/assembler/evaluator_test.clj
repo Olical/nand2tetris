@@ -27,6 +27,7 @@
 
 (def check-symbols (partial check get-symbols))
 (def check-binary (partial check get-binary))
+(def check-eval (partial check evaluate))
 
 (deftest is-symbol-test
   (testing "Empty symbols, so checks default."
@@ -56,7 +57,7 @@
       (assoc-in instructions [3 :value] 42))))
 
 (deftest get-binary-test
-  (testing "A instructions"
+  (testing "A instructions."
     (check-binary
       {:type :address
        :value 0}
@@ -65,7 +66,7 @@
       {:type :address
        :value 1000}
       "0000001111101000"))
-  (testing "C instructions"
+  (testing "C instructions."
     (check-binary
       {:type :command
        :dest :M
@@ -82,13 +83,26 @@
        :comp :A+1
        :jump :JEQ}
       "1110110111100010"))
-  (testing "Labels"
+  (testing "Labels."
     (check-binary
       {:type :label
        :symbol "LOOP"}
       nil))
-  (testing "Unknown"
+  (testing "Unknown."
     (check-binary
       {:type :unknown
        :token "LOLOL"}
       nil)))
+
+(deftest evaluate-test
+  (testing "Empty instructions."
+    (check-eval [] []))
+  (testing "Complex instructions."
+    (check-eval
+      instructions
+      [nil
+       "1111110000000111"
+       "0000000000010001"
+       nil
+       "1110111111010000"
+       "0000000000010011"])))
