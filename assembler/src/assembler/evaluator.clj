@@ -56,24 +56,24 @@
    :D|M "1010101"})
 
 (def bin-dest
-  {nil "000"
-   :M    "001"
-   :D    "010"
-   :MD   "011"
-   :A    "100"
-   :AM   "101"
-   :AD   "110"
-   :AMD  "111"})
+  {nil  "000"
+   :M   "001"
+   :D   "010"
+   :MD  "011"
+   :A   "100"
+   :AM  "101"
+   :AD  "110"
+   :AMD "111"})
 
 (def bin-jump
-  {nil "000"
-   :JGT  "001"
-   :JEQ  "010"
-   :JGE  "011"
-   :JLT  "100"
-   :JNE  "101"
-   :JLE  "110"
-   :JMP  "111"})
+  {:nil  "000"
+   ::JGT "001"
+   ::JEQ "010"
+   ::JGE "011"
+   ::JLT "100"
+   ::JNE "101"
+   ::JLE "110"
+   ::JMP "111"})
 
 (defn is-symbol?
   "Checks if the given symbol exists in the given symbol table or the default table."
