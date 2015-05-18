@@ -26,6 +26,7 @@
   (check #(assign-symbols symbols %) instructions expected))
 
 (def check-symbols (partial check get-symbols))
+(def check-binary (partial check get-binary))
 
 (deftest is-symbol-test
   (testing "Empty symbols, so checks default."
@@ -54,7 +55,40 @@
       instructions
       (assoc-in instructions [3 :value] 42))))
 
-;; This should just test one of each type.
-;; No point exhaustive testing, it's just lookup tables.
-;; As long as the tables are hooked up correctly, we're good.
-(deftest get-binary-test)
+(deftest get-binary-test
+  (testing "A instructions"
+    (check-binary
+      {:type :address
+       :value 0}
+      "0000000000000000")
+    (check-binary
+      {:type :address
+       :value 1000}
+      "0000001111101000"))
+  (testing "C instructions"
+    (check-binary
+      {:type :command
+       :dest :M
+       :comp :1}
+      "1110111111001000")
+    (check-binary
+      {:type :command
+       :comp :M
+       :jump :JMP}
+      "1111110000000111")
+    (check-binary
+      {:type :command
+       :dest :A
+       :comp :A+1
+       :jump :JEQ}
+      "1110110111100010"))
+  (testing "Labels"
+    (check-binary
+      {:type :label
+       :symbol "LOOP"}
+      nil))
+  (testing "Unknown"
+    (check-binary
+      {:type :unknown
+       :token "LOLOL"}
+      nil)))
