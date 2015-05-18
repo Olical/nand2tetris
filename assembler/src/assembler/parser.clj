@@ -6,7 +6,7 @@
                         :c       #"(\w+)=(.*);(\w+)"
                         :c-assoc #"(\w+)=(.*)"
                         :c-jump  #"(.*);(\w+)"
-                        :label   #"\((\w+)\)"})
+                        :label   #"\((.*)\)"})
 
 (def whitespace-expression #"(\s|//.*)+")
 

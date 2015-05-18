@@ -9,5 +9,6 @@
   (->> (slurp *in*)
        parse-source
        evaluate
+       (remove nil?)
        (str/join "\n")
        println))

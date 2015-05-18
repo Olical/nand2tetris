@@ -22,6 +22,10 @@
    {:type :label
     :symbol "FOO"}])
 
+(def clean-instructions
+  "Basically without labels."
+  (remove is-label? instructions))
+
 (defn check [f instructions expected]
   (let [result (f instructions)]
     (is (= result expected))))
@@ -32,6 +36,23 @@
 (def check-symbols (partial check (partial get-symbols {})))
 (def check-binary (partial check get-binary))
 (def check-eval (partial check evaluate))
+(def check-extract (partial check extract-labels))
+
+(deftest extract-labels-test
+  (testing "Empty instructions."
+    (check-extract [] {}))
+  (testing "Full instructions."
+    (check-extract
+      instructions
+      {:LOOP 0
+       :RECUR 2
+       :FOO 5})))
+
+(deftest is-label-test
+  (testing "Label."
+    (is (is-label? {:type :label})))
+  (testing "Not label."
+    (is (not (is-label? {:type :address})))))
 
 (deftest is-symbol-test
   (testing "Empty symbols, so checks default."
@@ -45,12 +66,10 @@
   (testing "Empty instructions return nothing."
     (check-symbols [] {}))
   (testing "Instructions with unresolved symbols resolve to the default symbol table."
-    (check-symbols instructions
-                   {:LOOP 0
-                    :i 16
-                    :RECUR 3
+    (check-symbols clean-instructions
+                   {:i 16
                     :a 17
-                    :FOO 7})))
+                    :FOO 18})))
 
 (deftest assign-symbols-test
   (testing "Passing no symbols returns the same instructions."
@@ -106,7 +125,7 @@
     (check-eval
       instructions
       ["1111110000000111"
-       "0000000000010001"
+       "0000000000010000"
        "1110111111010000"
-       "0000000000010011"
+       "0000000000010001"
        "0000000000000101"])))

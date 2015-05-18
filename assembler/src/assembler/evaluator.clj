@@ -66,14 +66,14 @@
    :AMD "111"})
 
 (def bin-jump
-  {:nil  "000"
-   ::JGT "001"
-   ::JEQ "010"
-   ::JGE "011"
-   ::JLT "100"
-   ::JNE "101"
-   ::JLE "110"
-   ::JMP "111"})
+  {nil  "000"
+   :JGT "001"
+   :JEQ "010"
+   :JGE "011"
+   :JLT "100"
+   :JNE "101"
+   :JLE "110"
+   :JMP "111"})
 
 (defn is-symbol?
   "Checks if the given symbol exists in the given symbol table or the default table."
@@ -81,17 +81,37 @@
   (or (contains? symbols symbol)
       (contains? default-symbol-table symbol)))
 
-(defn get-symbols
-  "Constructs a symbol table for the given instructions."
+(defn is-label?
+  "Checks if an instruction is a label."
+  [inst]
+  (= (inst :type) :label))
+
+(defn extract-labels
+  "Pull labels out of an instruction vector and create a symbol table for them."
   [instructions]
+  (loop [ins instructions
+         labels {}]
+    (if (empty? ins)
+      labels
+      (let [head (first ins)
+            label (keyword (head :symbol))
+            index (- (.indexOf instructions head) (count labels))]
+        (recur (rest ins)
+               (if (is-label? head)
+                 (assoc labels label index)
+                 labels))))))
+
+(defn get-symbols
+  "Constructs a symbol table for the given label table and instructions."
+  [labels instructions]
   (loop [ins (filter #(contains? % :symbol) instructions)
          symbols {}]
     (if (empty? ins)
-      symbols
+      (merge labels symbols)
       (let [symbol (keyword ((first ins) :symbol))
             next-id (+ 16 (count symbols))]
         (recur (rest ins)
-               (if (is-symbol? symbols symbol)
+               (if (is-symbol? (merge labels symbols) symbol)
                  symbols
                  (assoc symbols symbol next-id)))))))
 
@@ -136,5 +156,7 @@
   "Evaluates the given instructions by mapping their symbols and converting
   them all to binary. A vector of the binary representations is returned."
   [instructions]
-  (let [symbols (merge default-symbol-table (get-symbols instructions))]
-    (map get-binary (assign-symbols symbols instructions))))
+  (let [labels (extract-labels instructions)
+        clean-instructions (remove is-label? instructions)
+        symbols (merge default-symbol-table (get-symbols labels clean-instructions))]
+    (map get-binary (assign-symbols symbols clean-instructions))))
